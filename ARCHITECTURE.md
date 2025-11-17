@@ -479,3 +479,26 @@ UI refreshes (theme/font changes apply immediately)
 ### Distribution
 - Publish as self-contained: `dotnet publish -c Release -r win-x64 --self-contained`
 - Produces standalone executable with all dependencies
+
+## Integrated Server Launcher
+
+The application includes an integrated Python-based chat server that is automatically managed by the main application. This design simplifies the user experience by eliminating the need for manual server setup.
+
+### Server Launch and Management
+
+1.  **Initiation**:
+    The server is launched by the `StartServer` method, which is called during the application's startup sequence. This ensures that the server is running and ready to accept connections as soon as the main window appears.
+
+2.  **Process Creation**:
+    A new `System.Diagnostics.Process` is created to run the Python interpreter. The `ProcessStartInfo` is configured to execute the `is5.py` script, which contains the server's source code.
+
+3.  **Silent Operation**:
+    The server process is configured to run in the background without a visible window (`CreateNoWindow = true`). This provides a seamless user experience, as the server operates transparently.
+
+4.  **Communication and Logging**:
+    The application captures the server's standard output and error streams. This allows for real-time logging and debugging. All server output is redirected and logged to `server_log.txt`, making it easy to diagnose issues without interrupting the user.
+
+5.  **Termination**:
+    When the application is closed, the `Window_Closing` event handler ensures that the server process is terminated. This prevents the server from becoming a "zombie" process and ensures a clean shutdown.
+
+This integrated approach provides a self-contained and user-friendly experience, as the application manages the entire lifecycle of the server.
