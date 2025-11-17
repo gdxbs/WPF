@@ -6,21 +6,20 @@
         Foreground="{DynamicResource ForegroundBrush}"
         Closing="Window_Closing">
 
-    <Grid>
+    <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{DynamicResource PanelBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="15">
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
@@ -31,40 +30,22 @@
                            Name="StatusIndicator" Text="Disconnected"
                            Foreground="{DynamicResource ErrorBrush}" Margin="0,0,20,0" FontWeight="Bold"/>
 
-                <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Host:"
-                           Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,5,0"/>
-
-                <TextBox Grid.Column="2" Width="120" Margin="40,0,10,0"
-                         Name="HostTextBox" Text="localhost"
-                         Background="{DynamicResource BackgroundBrush}"
-                         Foreground="{DynamicResource ForegroundBrush}"
-                         BorderBrush="{DynamicResource BorderBrush}"/>
-
-                <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="Port:"
-                           Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,5,0"/>
-
-                <TextBox Grid.Column="3" Width="80" Margin="35,0,10,0"
-                         Name="PortTextBox" Text="9999"
-                         Background="{DynamicResource BackgroundBrush}"
-                         Foreground="{DynamicResource ForegroundBrush}"
-                         BorderBrush="{DynamicResource BorderBrush}"/>
-
-                <Button Grid.Column="4" HorizontalAlignment="Left" Width="80" Margin="10,0,10,0"
-                        Name="ConnectButton" Content="Connect" Click="ConnectButton_Click"
-                        Background="{DynamicResource AccentBrush}"
-                        Foreground="White" Cursor="Hand"/>
-
-                <Button Grid.Column="4" HorizontalAlignment="Left" Width="80" Margin="95,0,10,0"
-                        Name="DisconnectButton" Content="Disconnect" Click="DisconnectButton_Click"
+                <Button Grid.Column="2" Content="Logout" Click="LogoutButton_Click"
                         Background="{DynamicResource ErrorBrush}"
-                        Foreground="White" Cursor="Hand" IsEnabled="False"/>
+                        Foreground="White" Cursor="Hand" Margin="0,0,10,0"/>
 
-                <Button Grid.Column="5" Content="⚙" Width="35" Height="35" Padding="0"
+                <Button Grid.Column="3" Content="⚙" Width="35" Height="35" Padding="0"
                         Click="SettingsButton_Click"
                         Background="{DynamicResource PanelBrush}"
                         Foreground="{DynamicResource ForegroundBrush}"
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                         Cursor="Hand" ToolTip="Settings"/>
+                <Button Grid.Column="4" Content="Admin" Width="60" Height="35" Padding="0"
+                        Click="AdminButton_Click"
+                        Background="{DynamicResource PanelBrush}"
+                        Foreground="{DynamicResource ForegroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        Cursor="Hand" ToolTip="Admin Console" Margin="5,0,0,0"/>
             </Grid>
         </Border>
 
@@ -76,7 +57,7 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
-                <Grid Background="{DynamicResource PanelBrush}" Padding="10">
+                <Grid Background="{DynamicResource PanelBrush}" Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -92,58 +73,54 @@
                     <StackPanel Grid.Row="1" Margin="0,0,0,10">
                         <TextBlock Text="Create Room" FontSize="11"
                                    Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,5"/>
-                        <TextBox Name="CreateRoomIdTextBox" Placeholder="Room ID" Margin="0,0,0,5"
+                        <TextBox Name="CreateRoomIdTextBox" Margin="0,0,0,5"
                                  Background="{DynamicResource BackgroundBrush}"
                                  Foreground="{DynamicResource ForegroundBrush}"
-                                 BorderBrush="{DynamicResource BorderBrush}"/>
-                        <TextBox Name="CreateRoomNameTextBox" Placeholder="Room Name" Margin="0,0,0,5"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
+                        <TextBox Name="CreateRoomNameTextBox" Margin="0,0,0,5"
                                  Background="{DynamicResource BackgroundBrush}"
                                  Foreground="{DynamicResource ForegroundBrush}"
-                                 BorderBrush="{DynamicResource BorderBrush}"/>
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 GotFocus="TextBox_GotFocus" LostFocus="TextBox_LostFocus"/>
                         <Button Content="Create" Click="CreateRoomButton_Click"
                                 Background="{DynamicResource SuccessBrush}"
                                 Foreground="White" Cursor="Hand"/>
+                        <TextBlock Name="CreateRoomStatusTextBlock" Margin="0,5,0,0"
+                                   Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Margin="0,0,0,10">
-                        <TextBlock Text="Join Room" FontSize="11"
-                                   Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,5"/>
-                        <TextBox Name="JoinRoomIdTextBox" Placeholder="Room ID" Margin="0,0,0,5"
-                                 Background="{DynamicResource BackgroundBrush}"
-                                 Foreground="{DynamicResource ForegroundBrush}"
-                                 BorderBrush="{DynamicResource BorderBrush}"/>
-                        <TextBox Name="JoinUsernameTextBox" Placeholder="Username" Margin="0,0,0,5"
+                    <StackPanel Grid.Row="5" Margin="0,10,0,0" VerticalAlignment="Bottom">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Join Room" FontSize="11"
+                                       Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,5,5"/>
+                            <Button Content="🔄" Click="RefreshRoomsButton_Click"
+                                    Background="Transparent" BorderBrush="Transparent"
+                                    Foreground="{DynamicResource ForegroundBrush}" Cursor="Hand"/>
+                        </StackPanel>
+                        <ListBox Name="RoomListBox" Margin="0,0,0,5" Height="200"
+                                 SelectionMode="Extended"
                                  Background="{DynamicResource BackgroundBrush}"
                                  Foreground="{DynamicResource ForegroundBrush}"
                                  BorderBrush="{DynamicResource BorderBrush}"/>
                         <Button Content="Join" Click="JoinRoomButton_Click"
                                 Background="{DynamicResource AccentBrush}"
                                 Foreground="White" Cursor="Hand"/>
+                        <TextBlock Name="JoinRoomStatusTextBlock" Margin="0,5,0,0"
+                                   Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center"/>
                     </StackPanel>
 
-                    <Button Grid.Row="3" Content="List Rooms" Margin="0,0,0,10" Click="ListRoomsButton_Click"
-                            Background="{DynamicResource AccentBrush}"
-                            Foreground="White" Cursor="Hand"/>
-
-                    <Button Grid.Row="4" Content="Leave Room" Click="LeaveRoomButton_Click"
-                            Background="{DynamicResource WarningBrush}"
-                            Foreground="White" Cursor="Hand" IsEnabled="False"
-                            Name="LeaveRoomButton"/>
-
-                    <ListBox Grid.Row="5" Name="RoomListBox" Margin="0,10,0,0"
-                             Background="{DynamicResource BackgroundBrush}"
-                             Foreground="{DynamicResource ForegroundBrush}"
-                             BorderBrush="{DynamicResource BorderBrush}"/>
                 </Grid>
             </Border>
 
             <TabControl Grid.Column="1" Name="ChatTabControl"
                         Background="{DynamicResource BackgroundBrush}"
-                        Foreground="{DynamicResource ForegroundBrush}">
+                        Foreground="{DynamicResource ForegroundBrush}"
+                        SelectionChanged="ChatTabControl_SelectionChanged">
             </TabControl>
 
             <Border Grid.Column="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
-                <Grid Background="{DynamicResource PanelBrush}" Padding="10">
+                <Grid Background="{DynamicResource PanelBrush}" Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>

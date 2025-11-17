@@ -1,0 +1,23 @@
+<Window x:Class="ChatClient.AdminWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Admin Console" Height="450" Width="800"
+        Closing="Window_Closing">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBox x:Name="ServerOutputTextBox" Grid.Row="0" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Margin="5"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="CommandTextBox" Grid.Column="0" Margin="5" KeyDown="CommandTextBox_KeyDown"/>
+            <Button Content="Send" Grid.Column="1" Margin="5" Click="SendCommandButton_Click"/>
+        </Grid>
+    </Grid>
+</Window>

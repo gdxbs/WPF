@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
 
-    <Grid Padding="20">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -16,7 +16,7 @@
         <TabControl Grid.Row="0" Name="SettingsTabControl">
             <TabItem Header="Appearance" Background="{DynamicResource PanelBrush}"
                       Foreground="{DynamicResource ForegroundBrush}">
-                <Grid Background="{DynamicResource BackgroundBrush}" Padding="15">
+                <Grid Background="{DynamicResource BackgroundBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -64,7 +64,7 @@
 
             <TabItem Header="Notifications" Background="{DynamicResource PanelBrush}"
                       Foreground="{DynamicResource ForegroundBrush}">
-                <Grid Background="{DynamicResource BackgroundBrush}" Padding="15">
+                <Grid Background="{DynamicResource BackgroundBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -101,7 +101,7 @@
 
             <TabItem Header="Connection" Background="{DynamicResource PanelBrush}"
                       Foreground="{DynamicResource ForegroundBrush}">
-                <Grid Background="{DynamicResource BackgroundBrush}" Padding="15">
+                <Grid Background="{DynamicResource BackgroundBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -133,7 +133,7 @@
 
             <TabItem Header="Advanced" Background="{DynamicResource PanelBrush}"
                       Foreground="{DynamicResource ForegroundBrush}">
-                <Grid Background="{DynamicResource BackgroundBrush}" Padding="15">
+                <Grid Background="{DynamicResource BackgroundBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>

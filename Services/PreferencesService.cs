@@ -3,18 +3,17 @@ using System.Threading.Tasks;
 using ChatClient.Models;
 using Supabase;
 using Supabase.Gotrue;
+using Supabase.Postgrest.Extensions;
 
 namespace ChatClient.Services
 {
     public class PreferencesService
     {
-        private Client _supabaseClient;
-        private string _machineId;
+        private Supabase.Client _supabaseClient;
         private UserPreferences _currentPreferences;
 
         public PreferencesService()
         {
-            _machineId = GetOrCreateMachineId();
         }
 
         public async Task InitializeAsync(string supabaseUrl, string supabaseAnonKey)
@@ -26,7 +25,7 @@ namespace ChatClient.Services
                     AutoConnectRealtime = false
                 };
 
-                _supabaseClient = new Client(supabaseUrl, supabaseAnonKey, options);
+                _supabaseClient = new Supabase.Client(supabaseUrl, supabaseAnonKey, options);
                 await _supabaseClient.InitializeAsync();
             }
             catch (Exception ex)
@@ -35,22 +34,23 @@ namespace ChatClient.Services
             }
         }
 
-        public async Task<UserPreferences> LoadPreferencesAsync()
+        public async Task<UserPreferences> LoadPreferencesAsync(Guid userId)
         {
             try
             {
                 var response = await _supabaseClient
-                    .From<UserPreferences>("user_preferences")
+                    .From<UserPreferences>()
                     .Select("*")
-                    .Eq("machine_id", _machineId)
+                    .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
                     .Single();
 
-                _currentPreferences = response ?? CreateDefaultPreferences();
+                _currentPreferences = response ?? CreateDefaultPreferences(userId);
                 return _currentPreferences;
             }
             catch (Exception ex)
             {
-                _currentPreferences = CreateDefaultPreferences();
+                Console.WriteLine($"Error loading preferences: {ex.Message}. Creating default preferences.");
+                _currentPreferences = CreateDefaultPreferences(userId);
                 return _currentPreferences;
             }
         }
@@ -59,7 +59,6 @@ namespace ChatClient.Services
         {
             try
             {
-                preferences.MachineId = _machineId;
                 preferences.UpdatedAt = DateTime.UtcNow;
 
                 if (string.IsNullOrEmpty(preferences.Id))
@@ -68,13 +67,13 @@ namespace ChatClient.Services
                     preferences.CreatedAt = DateTime.UtcNow;
 
                     await _supabaseClient
-                        .From<UserPreferences>("user_preferences")
+                        .From<UserPreferences>()
                         .Insert(preferences);
                 }
                 else
                 {
                     await _supabaseClient
-                        .From<UserPreferences>("user_preferences")
+                        .From<UserPreferences>()
                         .Update(preferences);
                 }
 
@@ -83,20 +82,21 @@ namespace ChatClient.Services
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error saving preferences: {ex.Message}");
                 return false;
             }
         }
 
-        public UserPreferences GetCurrentPreferences()
+        public UserPreferences GetCurrentPreferences(Guid userId)
         {
-            return _currentPreferences ?? CreateDefaultPreferences();
+            return _currentPreferences ?? CreateDefaultPreferences(userId);
         }
 
-        private UserPreferences CreateDefaultPreferences()
+        private UserPreferences CreateDefaultPreferences(Guid userId)
         {
             return new UserPreferences
             {
-                MachineId = _machineId,
+                UserId = userId,
                 ThemeMode = "light",
                 AccentColor = "#0078D4",
                 FontSize = 12,
@@ -112,32 +112,6 @@ namespace ChatClient.Services
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-        }
-
-        private string GetOrCreateMachineId()
-        {
-            string registryPath = @"Software\ChatClient\AppSettings";
-            string valueName = "MachineId";
-
-            try
-            {
-                Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(registryPath);
-
-                if (key?.GetValue(valueName) is string existingId)
-                {
-                    return existingId;
-                }
-
-                string newMachineId = Guid.NewGuid().ToString();
-                key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
-                key?.SetValue(valueName, newMachineId);
-
-                return newMachineId;
-            }
-            catch
-            {
-                return Guid.NewGuid().ToString();
-            }
         }
     }
 }

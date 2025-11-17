@@ -1,0 +1,218 @@
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> System: Admin connection from ('127.0.0.1', 54882)
+OUT: Received admin command from ('127.0.0.1', 54882): `list
+OUT: System: Handling admin command from ('127.0.0.1', 54882): `list
+OUT: Send to admin ('127.0.0.1', 54882): No room exists!
+OUT: Received admin command from ('127.0.0.1', 54882): `kick gdubs p
+OUT: System: Handling admin command from ('127.0.0.1', 54882): `kick gdubs p
+OUT: ADMIN COMMAND: kick received with parts: ['`kick', 'gdubs', 'p']
+OUT: ADMIN COMMAND: Kicking gdubs from p
+OUT: ADMIN COMMAND: Room p not found.
+OUT: Send to admin ('127.0.0.1', 54882): Administrator: Room ID p not found.
+OUT: Received admin command from ('127.0.0.1', 54882): `list
+OUT: System: Handling admin command from ('127.0.0.1', 54882): `list
+OUT: Send to admin ('127.0.0.1', 54882): No room exists!
+OUT: Received admin command from ('127.0.0.1', 54882): ``quit
+OUT: System: Handling admin command from ('127.0.0.1', 54882): ``quit
+OUT: System: Admin client ('127.0.0.1', 54882) disconnected.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> System: Admin connection from ('127.0.0.1', 54935)
+OUT: Received admin command from ('127.0.0.1', 54935): `list
+OUT: System: Handling admin command from ('127.0.0.1', 54935): `list
+OUT: Send to admin ('127.0.0.1', 54935): No room exists!
+OUT: Received admin command from ('127.0.0.1', 54935): `start oo lmo
+OUT: System: Handling admin command from ('127.0.0.1', 54935): `start oo lmo
+OUT: Send to admin ('127.0.0.1', 54935): Chatroom oo started!
+OUT: Received admin command from ('127.0.0.1', 54935): `end oo
+OUT: System: Handling admin command from ('127.0.0.1', 54935): `end oo
+OUT: Send to admin ('127.0.0.1', 54935): Administrator: chatroom oo closed.
+OUT: Received admin command from ('127.0.0.1', 54935): `end p
+OUT: System: Handling admin command from ('127.0.0.1', 54935): `end p
+OUT: Send to admin ('127.0.0.1', 54935): Administrator: Room ID not found.
+OUT: Received admin command from ('127.0.0.1', 54935): ``quit
+OUT: System: Handling admin command from ('127.0.0.1', 54935): ``quit
+OUT: System: Admin client ('127.0.0.1', 54935) disconnected.
+ERROR:   File "C:\Users\Greg\source\repos\gdxbs\WPF\is5.py", line 325
+ERROR:     if cmd == "`help":
+ERROR:     ^^
+ERROR: SyntaxError: expected 'except' or 'finally' block
+ERROR:   File "C:\Users\Greg\source\repos\gdxbs\WPF\is5.py", line 325
+ERROR:     if cmd == "`help":
+ERROR:     ^^
+ERROR: SyntaxError: expected 'except' or 'finally' block
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> System: Admin connection from ('127.0.0.1', 55327)
+OUT: Received admin command from ('127.0.0.1', 55327): `help
+OUT: System: Handling admin command from ('127.0.0.1', 55327): `help
+OUT: Received admin command from ('127.0.0.1', 55327): `list
+OUT: System: Handling admin command from ('127.0.0.1', 55327): `list
+OUT: Send to admin ('127.0.0.1', 55327): No room exists!
+OUT: Received admin command from ('127.0.0.1', 55327): `rooms
+OUT: System: Handling admin command from ('127.0.0.1', 55327): `rooms
+OUT: Received admin command from ('127.0.0.1', 55327): `list
+OUT: System: Handling admin command from ('127.0.0.1', 55327): `list
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> System: Admin connection from ('127.0.0.1', 56935)
+OUT: Received admin command from ('127.0.0.1', 56935): `list
+OUT: System: Handling admin command from ('127.0.0.1', 56935): `list
+OUT: Send to admin ('127.0.0.1', 56935): No room exists!
+OUT: Received admin command from ('127.0.0.1', 56935): ``quit
+OUT: System: Handling admin command from ('127.0.0.1', 56935): ``quit
+OUT: System: Admin client ('127.0.0.1', 56935) disconnected.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> System: Admin connection from ('127.0.0.1', 57055)
+OUT: Received admin command from ('127.0.0.1', 57055): list
+OUT: Received admin command from ('127.0.0.1', 57055): `quit
+OUT: System: Handling admin command from ('127.0.0.1', 57055): `quit
+OUT: Send to admin ('127.0.0.1', 57055): You have been disconnected.
+OUT: System: Error in admin handle loop for ('127.0.0.1', 57055): [WinError 10038] An operation was attempted on something that is not a socket
+OUT: System: Admin client ('127.0.0.1', 57055) disconnected.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 
+OUT: SERVER SCRIPT STARTED
+OUT: System: ChatServer is listening at (localhost, 9999)...
+OUT: System: AdminServer is listening at (localhost, 10000)...
+OUT: Chat administration console is running. Type '`help'.
+OUT: Chat administration:> 

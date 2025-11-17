@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using ChatClient.Models;
 using ChatClient.Services;
 using ChatClient.Themes;
@@ -17,19 +20,106 @@ namespace ChatClient
         private MessageRouterService _messageRouter;
         private SoundService _soundService;
         private Dictionary<string, ChatRoom> _joinedRooms;
+        private Dictionary<string, string> _roomUsernames;
         private string _currentRoomId;
+        private Process _serverProcess;
+        private User _user;
 
-        public MainWindow()
+        public MainWindow(User user)
         {
             InitializeComponent();
+            _user = user;
 
             _joinedRooms = new Dictionary<string, ChatRoom>();
+            _roomUsernames = new Dictionary<string, string>();
             _messageRouter = new MessageRouterService();
             _soundService = new SoundService();
             _networkService = new NetworkService();
             _preferencesService = new PreferencesService();
 
+            StartServer();
             InitializeServices();
+            SetPlaceholderText();
+            AutoConnect();
+        }
+
+        private async void AutoConnect()
+        {
+            SubscribeToNetworkEvents();
+
+            var (connected, errorMessage) = await Task.Run(() => _networkService.ConnectAsync("localhost", 9999));
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (connected)
+                {
+                    StatusIndicator.Text = "Connected";
+                    StatusIndicator.Foreground = (System.Windows.Media.Brush)FindResource("SuccessBrush");
+                    _ = _networkService.SendCommandAsync("list");
+                }
+                else
+                {
+                    MessageBox.Show($"Failed to connect to server: {errorMessage}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            });
+        }
+
+        private void StartServer()
+        {
+            string pythonScriptPath = "is5.py";
+            if (!System.IO.File.Exists(pythonScriptPath))
+            {
+                MessageBox.Show("Server script 'is5.py' not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            _serverProcess = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "python",
+                    Arguments = pythonScriptPath,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            _serverProcess.ErrorDataReceived += (sender, args) =>
+            {
+                if (!string.IsNullOrEmpty(args.Data))
+                {
+                    Console.WriteLine($"Server ERROR: {args.Data}");
+                    System.IO.File.AppendAllText("server_log.txt", $"ERROR: {args.Data}\n");
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show($"Server Error: {args.Data}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+                }
+            };
+
+            _serverProcess.OutputDataReceived += (sender, args) =>
+            {
+                if (!string.IsNullOrEmpty(args.Data))
+                {
+                    Console.WriteLine($"Server OUT: {args.Data}");
+                    System.IO.File.AppendAllText("server_log.txt", $"OUT: {args.Data}\n");
+                }
+            };
+
+            try
+            {
+                _serverProcess.Start();
+                _serverProcess.BeginErrorReadLine();
+                _serverProcess.BeginOutputReadLine();
+                Console.WriteLine("Server process started.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to start server: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void InitializeServices()
@@ -37,16 +127,13 @@ namespace ChatClient
             try
             {
                 await _preferencesService.InitializeAsync(
-                    "https://ndunxomhastqvcbtfrhp.supabase.co",
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kdW54b21oYXN0cXZjYnRmcmhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyMzYxNjgsImV4cCI6MjA3ODgxMjE2OH0.z1KObMN-GXbBX4KKZm90CT1D2I_Teecf6DkPKEaNn4s");
+                    "https://drttmgajjlyhpwurbgsm.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRydHRtZ2Fqamx5aHB3dXJiZ3NtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzM0NTcyNSwiZXhwIjoyMDc4OTIxNzI1fQ.tNQKdokibFLz_7ri0CjyiS3Ej5lB4hGRtlQVu2BIjF0");
 
-                var preferences = await _preferencesService.LoadPreferencesAsync();
+                var preferences = await _preferencesService.LoadPreferencesAsync(_user.Id);
 
                 ThemeManager.ApplyTheme(preferences.ThemeMode);
                 ThemeManager.ApplyAccentColor(preferences.AccentColor);
-
-                HostTextBox.Text = preferences.LastConnectionHost;
-                PortTextBox.Text = preferences.LastConnectionPort.ToString();
 
                 _soundService.SetSoundEnabled(preferences.SoundEnabled);
                 _soundService.SetVolume(preferences.NotificationVolume);
@@ -71,51 +158,18 @@ namespace ChatClient
             _networkService.ErrorOccurred -= NetworkService_ErrorOccurred;
         }
 
-        private async void ConnectButton_Click(object sender, RoutedEventArgs e)
-        {
-            string host = HostTextBox.Text.Trim();
-            if (!int.TryParse(PortTextBox.Text, out int port))
-            {
-                MessageBox.Show("Invalid port number", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            ConnectButton.IsEnabled = false;
-
-            bool connected = await _networkService.ConnectAsync(host, port);
-
-            if (connected)
-            {
-                SubscribeToNetworkEvents();
-                ConnectButton.IsEnabled = false;
-                DisconnectButton.IsEnabled = true;
-                HostTextBox.IsEnabled = false;
-                PortTextBox.IsEnabled = false;
-
-                SaveConnectionDetails(host, port);
-            }
-            else
-            {
-                ConnectButton.IsEnabled = true;
-                MessageBox.Show("Failed to connect to server", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void DisconnectButton_Click(object sender, RoutedEventArgs e)
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
             DisconnectFromServer();
+            var loginWindow = new LoginWindow();
+            loginWindow.Show();
+            Close();
         }
 
         private void DisconnectFromServer()
         {
             _networkService.Disconnect();
             UnsubscribeFromNetworkEvents();
-
-            ConnectButton.IsEnabled = true;
-            DisconnectButton.IsEnabled = false;
-            HostTextBox.IsEnabled = true;
-            PortTextBox.IsEnabled = true;
-            LeaveRoomButton.IsEnabled = false;
 
             _joinedRooms.Clear();
             ChatTabControl.Items.Clear();
@@ -128,7 +182,7 @@ namespace ChatClient
             string roomId = CreateRoomIdTextBox.Text.Trim();
             string roomName = CreateRoomNameTextBox.Text.Trim();
 
-            if (string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(roomName))
+            if (string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(roomName) || roomId == "Enter Room ID" || roomName == "Enter Room Name")
             {
                 MessageBox.Show("Please enter both room ID and name", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -141,51 +195,54 @@ namespace ChatClient
             }
 
             await _networkService.SendCommandAsync($"start {roomId} {roomName}");
+            await _networkService.SendCommandAsync("list");
 
             CreateRoomIdTextBox.Clear();
             CreateRoomNameTextBox.Clear();
+            SetPlaceholderText();
+            CreateRoomStatusTextBlock.Text = "Room created successfully!";
+            await Task.Delay(3000);
+            CreateRoomStatusTextBlock.Text = "";
         }
 
         private async void JoinRoomButton_Click(object sender, RoutedEventArgs e)
         {
-            string roomId = JoinRoomIdTextBox.Text.Trim();
-            string username = JoinUsernameTextBox.Text.Trim();
-
-            if (string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(username))
+            if (RoomListBox.SelectedItems.Count == 0)
             {
-                MessageBox.Show("Please enter both room ID and username", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select one or more rooms to join.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            if (!_networkService.IsConnected())
+            foreach (string selectedRoom in RoomListBox.SelectedItems)
             {
-                MessageBox.Show("Not connected to server", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                var match = Regex.Match(selectedRoom, @"@(\w+):");
+                if (match.Success)
+                {
+                    string roomId = match.Groups[1].Value;
+
+                    if (!_networkService.IsConnected())
+                    {
+                        MessageBox.Show("Not connected to server", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    if (!_joinedRooms.ContainsKey(roomId))
+                    {
+                        _roomUsernames[roomId] = _user.Username;
+                        await _networkService.SendCommandAsync($"join {roomId} {_user.Username}");
+                        HandleRoomJoined(roomId);
+                    }
+                }
             }
 
-            await _networkService.SendCommandAsync($"join {roomId} {username}");
+            JoinRoomStatusTextBlock.Text = "Joined selected rooms!";
+            await Task.Delay(3000);
+            JoinRoomStatusTextBlock.Text = "";
         }
 
-        private async void ListRoomsButton_Click(object sender, RoutedEventArgs e)
+        private async void RefreshRoomsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_networkService.IsConnected())
-            {
-                MessageBox.Show("Not connected to server", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
             await _networkService.SendCommandAsync("list");
-        }
-
-        private async void LeaveRoomButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_currentRoomId))
-            {
-                MessageBox.Show("No room selected", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            await _networkService.SendCommandAsync("quit");
         }
 
         private void NetworkService_MessageReceived(object sender, string message)
@@ -198,36 +255,74 @@ namespace ChatClient
 
         private void ProcessReceivedMessage(string message)
         {
-            if (message.Contains("You join @chatroom"))
+            var match = Regex.Match(message, @"^@(\w+):(.*)");
+            if (match.Success)
             {
-                HandleRoomJoined(message);
+                string roomId = match.Groups[1].Value;
+                string content = match.Groups[2].Value.Trim();
+                HandleBroadcastMessage(content, roomId);
             }
-            else if (message.Contains("joined us @chatroom"))
-            {
-                HandleUserJoined(message);
-            }
-            else if (message.Contains("quitted from chatroom"))
-            {
-                HandleRoomLeft(message);
-            }
-            else if (message.StartsWith("No room exists") || message.Contains("@chatroom:"))
+            else if (message.StartsWith("No room exists") || Regex.IsMatch(message, @"\w+@\w+:"))
             {
                 HandleListRoomsResponse(message);
             }
-            else if (message.Contains("Server:"))
+            else if (message.Contains("You were kicked out from chatroom"))
             {
-                HandleServerMessage(message);
+                HandleKickedOut(message);
+            }
+            else if (message.Contains("You quitted from chatroom"))
+            {
+                // This is a confirmation message from the server.
+                // The client already handled the cleanup when the tab was closed,
+                // so we can safely ignore this message to prevent the error.
+                return;
             }
             else
             {
-                HandleChatMessage(message);
+                // If we receive a generic message, and we have an active room, display it there.
+                if (!string.IsNullOrEmpty(_currentRoomId))
+                {
+                    HandleBroadcastMessage(message, _currentRoomId);
+                }
             }
         }
 
-        private void HandleRoomJoined(string message)
+        private void HandleBroadcastMessage(string content, string roomId)
         {
-            string roomId = ExtractRoomId(message);
+            if (content.Contains("You join @chatroom"))
+            {
+                HandleRoomJoined(roomId);
+            }
+            else if (content.Contains("joined us @chatroom"))
+            {
+                HandleUserJoined(content, roomId);
+            }
+            else if (content.Contains("quitted from chatroom"))
+            {
+                HandleRoomLeft(content, roomId);
+            }
+            else if (content.Contains("Server:"))
+            {
+                HandleServerMessage(content, roomId);
+            }
+            else
+            {
+                var userMessageMatch = Regex.Match(content, @"^([^:]+): (.*)");
+                if (userMessageMatch.Success)
+                {
+                    string username = userMessageMatch.Groups[1].Value;
+                    string message = userMessageMatch.Groups[2].Value.Trim();
+                    HandleChatMessage($"{username}: {message}", roomId);
+                }
+                else
+                {
+                    HandleChatMessage(content, roomId);
+                }
+            }
+        }
 
+        private void HandleRoomJoined(string roomId)
+        {
             if (!_joinedRooms.ContainsKey(roomId))
             {
                 var room = new ChatRoom { RoomId = roomId, RoomName = roomId };
@@ -236,23 +331,27 @@ namespace ChatClient
 
                 AddRoomTab(roomId);
                 _currentRoomId = roomId;
-                LeaveRoomButton.IsEnabled = true;
             }
 
             if (_currentRoomId == roomId && _joinedRooms.TryGetValue(roomId, out var chatRoom))
             {
-                chatRoom.AddMessage($"[System] {message}");
+                chatRoom.AddMessage($"[System] You joined {roomId}.");
             }
 
+            _ = _networkService.SendCommandAsync("list");
             _ = _soundService.PlayNotificationAsync("join_leave");
         }
 
-        private void HandleUserJoined(string message)
+        private void HandleUserJoined(string message, string roomId)
         {
-            string roomId = ExtractRoomId(message);
-
-            if (_joinedRooms.TryGetValue(roomId, out var room))
+            var match = Regex.Match(message, @"^(\w+):");
+            if (match.Success && _joinedRooms.TryGetValue(roomId, out var room))
             {
+                string username = match.Groups[1].Value;
+                if (!room.Users.Contains(username))
+                {
+                    room.Users.Add(username);
+                }
                 room.AddMessage($"[System] {message}");
                 RefreshUsersList();
             }
@@ -260,23 +359,50 @@ namespace ChatClient
             _ = _soundService.PlayNotificationAsync("join_leave");
         }
 
-        private void HandleRoomLeft(string message)
+        private void HandleRoomLeft(string message, string roomId)
         {
-            string roomId = ExtractRoomId(message);
-
-            if (_joinedRooms.TryGetValue(roomId, out var room))
+            var match = Regex.Match(message, @"Server: (\w+) quitted.");
+            if (match.Success && _joinedRooms.TryGetValue(roomId, out var room))
             {
-                RemoveRoomTab(roomId);
-                _joinedRooms.Remove(roomId);
-                _messageRouter.UnregisterRoom(roomId);
-
-                if (_currentRoomId == roomId)
+                string username = match.Groups[1].Value;
+                room.Users.Remove(username);
+                room.AddMessage($"[System] {message}");
+                RefreshUsersList();
+            }
+            else
+            {
+                if (_joinedRooms.TryGetValue(roomId, out var roomToLeave))
                 {
-                    _currentRoomId = _joinedRooms.Keys.FirstOrDefault();
-                    if (string.IsNullOrEmpty(_currentRoomId))
+                    RemoveRoomTab(roomId);
+                    _joinedRooms.Remove(roomId);
+                    _messageRouter.UnregisterRoom(roomId);
+
+                    if (_currentRoomId == roomId)
                     {
-                        LeaveRoomButton.IsEnabled = false;
+                        _currentRoomId = _joinedRooms.Keys.FirstOrDefault();
                     }
+                }
+            }
+        }
+
+        private void HandleKickedOut(string message)
+        {
+            var match = Regex.Match(message, @"@(\w+) by the Administrator!");
+            if (match.Success)
+            {
+                string roomId = match.Groups[1].Value;
+                if (_joinedRooms.ContainsKey(roomId))
+                {
+                    RemoveRoomTab(roomId);
+                    _joinedRooms.Remove(roomId);
+                    _messageRouter.UnregisterRoom(roomId);
+
+                    if (_currentRoomId == roomId)
+                    {
+                        _currentRoomId = _joinedRooms.Keys.FirstOrDefault();
+                    }
+                    
+                    MessageBox.Show($"You have been kicked from room {roomId}.", "Kicked", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }
@@ -291,13 +417,36 @@ namespace ChatClient
                 if (!string.IsNullOrWhiteSpace(line) && line != "No room exists!")
                 {
                     RoomListBox.Items.Add(line.Trim());
+
+                    var match = Regex.Match(line, @"^(.+)@(\w+): (.*)");
+                    if (match.Success)
+                    {
+                        string roomName = match.Groups[1].Value;
+                        string roomId = match.Groups[2].Value;
+                        string users = match.Groups[3].Value;
+
+                        if (_joinedRooms.TryGetValue(roomId, out var room))
+                        {
+                            room.Users.Clear();
+                            var userMatches = Regex.Matches(users, @"(\w+)@\('[\d\.]+', \d+\)");
+                            foreach (Match userMatch in userMatches)
+                            {
+                                var username = userMatch.Groups[1].Value;
+                                if (!room.Users.Contains(username))
+                                {
+                                    room.Users.Add(username);
+                                }
+                            }
+                        }
+                    }
                 }
             }
+            RefreshUsersList();
         }
 
-        private void HandleServerMessage(string message)
+        private void HandleServerMessage(string message, string roomId)
         {
-            if (!string.IsNullOrEmpty(_currentRoomId) && _joinedRooms.TryGetValue(_currentRoomId, out var room))
+            if (_joinedRooms.TryGetValue(roomId, out var room))
             {
                 room.AddMessage($"[Server] {message}");
             }
@@ -305,9 +454,9 @@ namespace ChatClient
             _ = _soundService.PlayNotificationAsync("message");
         }
 
-        private void HandleChatMessage(string message)
+        private void HandleChatMessage(string message, string roomId)
         {
-            if (!string.IsNullOrEmpty(_currentRoomId) && _joinedRooms.TryGetValue(_currentRoomId, out var room))
+            if (_joinedRooms.TryGetValue(roomId, out var room))
             {
                 room.AddMessage(message);
                 RefreshUsersList();
@@ -320,32 +469,47 @@ namespace ChatClient
         {
             var tab = new TabItem
             {
-                Header = roomId,
-                Name = $"Tab_{roomId}",
-                Background = (System.Windows.Media.Brush)FindResource("PanelBrush"),
-                Foreground = (System.Windows.Media.Brush)FindResource("ForegroundBrush")
+                Name = $"Tab_{roomId}"
             };
+
+            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            headerPanel.Children.Add(new TextBlock { Text = roomId });
+            var closeButton = new Button
+            {
+                Content = "x",
+                Tag = roomId,
+                Margin = new Thickness(5, 0, 0, 0),
+                Padding = new Thickness(3),
+                FontSize = 12,
+                FontWeight = FontWeights.Bold,
+                Background = System.Windows.Media.Brushes.Transparent,
+                BorderThickness = new Thickness(0)
+            };
+            closeButton.Click += CloseButton_Click;
+            headerPanel.Children.Add(closeButton);
+
+            tab.Header = headerPanel;
 
             var grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            var chatTextBox = new TextBox
+            var chatListBox = new ListBox
             {
                 Name = $"ChatBox_{roomId}",
-                IsReadOnly = true,
-                TextWrapping = TextWrapping.Wrap,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                ItemsSource = _joinedRooms[roomId].Messages,
                 Background = (System.Windows.Media.Brush)FindResource("BackgroundBrush"),
                 Foreground = (System.Windows.Media.Brush)FindResource("ForegroundBrush"),
-                BorderBrush = (System.Windows.Media.Brush)FindResource("BorderBrush"),
-                Padding = new Thickness(10)
+                BorderBrush = (System.Windows.Media.Brush)FindResource("BorderBrush")
             };
 
-            Grid.SetRow(chatTextBox, 0);
-            grid.Children.Add(chatTextBox);
+            Grid.SetRow(chatListBox, 0);
+            grid.Children.Add(chatListBox);
 
-            var messagePanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(10) };
+            var messageGrid = new Grid { Margin = new Thickness(10) };
+            messageGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            messageGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
             var messageInput = new TextBox
             {
                 Name = $"MessageInput_{roomId}",
@@ -355,6 +519,9 @@ namespace ChatClient
                 Margin = new Thickness(0, 0, 10, 0),
                 Padding = new Thickness(5)
             };
+            messageInput.KeyDown += MessageInput_KeyDown;
+            Grid.SetColumn(messageInput, 0);
+            messageGrid.Children.Add(messageInput);
 
             var sendButton = new Button
             {
@@ -366,15 +533,33 @@ namespace ChatClient
                 Tag = roomId
             };
             sendButton.Click += SendButton_Click;
+            Grid.SetColumn(sendButton, 1);
+            messageGrid.Children.Add(sendButton);
 
-            messagePanel.Children.Add(messageInput);
-            messagePanel.Children.Add(sendButton);
-
-            Grid.SetRow(messagePanel, 1);
-            grid.Children.Add(messagePanel);
+            Grid.SetRow(messageGrid, 1);
+            grid.Children.Add(messageGrid);
 
             tab.Content = grid;
             ChatTabControl.Items.Add(tab);
+        }
+
+        private async void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string roomId)
+            {
+                if (_joinedRooms.ContainsKey(roomId))
+                {
+                    await _networkService.SendCommandAsync($"quit {roomId}");
+                    RemoveRoomTab(roomId);
+                    _joinedRooms.Remove(roomId);
+                    _messageRouter.UnregisterRoom(roomId);
+
+                    if (_currentRoomId == roomId)
+                    {
+                        _currentRoomId = _joinedRooms.Keys.FirstOrDefault();
+                    }
+                }
+            }
         }
 
         private void RemoveRoomTab(string roomId)
@@ -404,15 +589,46 @@ namespace ChatClient
             if (tab?.Content is Grid grid)
             {
                 var messageInput = grid.Children
-                    .OfType<StackPanel>()
-                    .SelectMany(sp => sp.Children.OfType<TextBox>())
+                    .OfType<Grid>()
+                    .SelectMany(g => g.Children.OfType<TextBox>())
                     .FirstOrDefault(tb => tb.Name == $"MessageInput_{roomId}");
 
                 if (messageInput != null && !string.IsNullOrWhiteSpace(messageInput.Text))
                 {
-                    await _networkService.SendMessageAsync(messageInput.Text);
+                    string message = messageInput.Text;
+
+                    if (_joinedRooms.TryGetValue(roomId, out var room))
+                    {
+                        room.AddMessage($"{_user.Username}: {message}");
+                    }
+
+                    await _networkService.SendMessageAsync(message);
                     messageInput.Clear();
                 }
+            }
+        }
+
+        private void MessageInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var textBox = sender as TextBox;
+                var messageGrid = textBox?.Parent as Grid;
+                var sendButton = messageGrid?.Children.OfType<Button>().FirstOrDefault();
+
+                if (sendButton != null)
+                {
+                    sendButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                }
+            }
+        }
+
+        private void ChatTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ChatTabControl.SelectedItem is TabItem selectedTab)
+            {
+                _currentRoomId = selectedTab.Name.Substring(4); // Remove "Tab_"
+                RefreshUsersList();
             }
         }
 
@@ -429,9 +645,16 @@ namespace ChatClient
             }
         }
 
+        private void AdminButton_Click(object sender, RoutedEventArgs e)
+        {
+            var adminLoginWindow = new AdminLoginWindow();
+            adminLoginWindow.Owner = this;
+            adminLoginWindow.ShowDialog();
+        }
+
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            var settingsWindow = new SettingsWindow();
+            var settingsWindow = new SettingsWindow(_user, _preferencesService);
             settingsWindow.Owner = this;
             settingsWindow.ShowDialog();
         }
@@ -461,7 +684,7 @@ namespace ChatClient
             {
                 try
                 {
-                    var preferences = _preferencesService.GetCurrentPreferences();
+                    var preferences = _preferencesService.GetCurrentPreferences(_user.Id);
                     preferences.LastConnectionHost = host;
                     preferences.LastConnectionPort = port;
                     await _preferencesService.SavePreferencesAsync(preferences);
@@ -480,6 +703,43 @@ namespace ChatClient
             return match.Success ? match.Groups[1].Value : "";
         }
 
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && textBox.Tag is string placeholder)
+            {
+                if (textBox.Text == placeholder)
+                {
+                    textBox.Text = "";
+                    textBox.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundBrush");
+                }
+            }
+        }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && textBox.Tag is string placeholder)
+            {
+                if (string.IsNullOrWhiteSpace(textBox.Text))
+                {
+                    textBox.Text = placeholder;
+                    textBox.Foreground = (System.Windows.Media.Brush)FindResource("PlaceholderTextBrush");
+                }
+            }
+        }
+
+        private void SetPlaceholderText()
+        {
+            SetPlaceholder(CreateRoomIdTextBox, "Enter Room ID");
+            SetPlaceholder(CreateRoomNameTextBox, "Enter Room Name");
+        }
+
+        private void SetPlaceholder(TextBox textBox, string placeholder)
+        {
+            textBox.Tag = placeholder;
+            textBox.Text = placeholder;
+            textBox.Foreground = (System.Windows.Media.Brush)FindResource("PlaceholderTextBrush");
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (_networkService.IsConnected())
@@ -489,6 +749,11 @@ namespace ChatClient
             }
 
             _soundService.Dispose();
+
+            if (_serverProcess != null && !_serverProcess.HasExited)
+            {
+                _serverProcess.Kill();
+            }
         }
     }
 }

@@ -1,9 +1,10 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Forms;
 using ChatClient.Models;
 using ChatClient.Services;
 using ChatClient.Themes;
+using Microsoft.Win32;
 
 namespace ChatClient
 {
@@ -11,11 +12,13 @@ namespace ChatClient
     {
         private PreferencesService _preferencesService;
         private UserPreferences _currentPreferences;
+        private User _user;
 
-        public SettingsWindow()
+        public SettingsWindow(User user, PreferencesService preferencesService)
         {
             InitializeComponent();
-            _preferencesService = new PreferencesService();
+            _user = user;
+            _preferencesService = preferencesService;
             LoadSettings();
         }
 
@@ -23,7 +26,7 @@ namespace ChatClient
         {
             try
             {
-                _currentPreferences = await Task.Run(() => _preferencesService.LoadPreferencesAsync());
+                _currentPreferences = await Task.Run(() => _preferencesService.LoadPreferencesAsync(_user.Id));
 
                 LightThemeRadio.IsChecked = _currentPreferences.ThemeMode == "light";
                 DarkThemeRadio.IsChecked = _currentPreferences.ThemeMode == "dark";
@@ -51,16 +54,16 @@ namespace ChatClient
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void FontSizeSlider_ValueChanged(object sender, System.Windows.Controls.Primitives.RangeBaseEventArgs e)
+        private void FontSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             FontSizeValue.Text = $"{(int)e.NewValue}pt";
         }
 
-        private void VolumeSlider_ValueChanged(object sender, System.Windows.Controls.Primitives.RangeBaseEventArgs e)
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             VolumeValue.Text = $"{(int)e.NewValue}%";
         }
@@ -88,7 +91,7 @@ namespace ChatClient
                 Filter = "Image Files (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg;*.bmp;*.gif|All files (*.*)|*.*"
             };
 
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (openFileDialog.ShowDialog() == true)
             {
                 BackgroundImagePathTextBox.Text = openFileDialog.FileName;
             }
@@ -116,15 +119,23 @@ namespace ChatClient
                 _currentPreferences.BackgroundImagePath = BackgroundImagePathTextBox.Text;
                 _currentPreferences.WindowTransparency = (int)TransparencySlider.Value;
 
-                await _preferencesService.SavePreferencesAsync(_currentPreferences);
+                var success = await _preferencesService.SavePreferencesAsync(_currentPreferences);
 
-                System.Windows.MessageBox.Show("Settings saved successfully", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
-                Close();
+                if (success)
+                {
+                    ThemeManager.ApplyTheme(_currentPreferences.ThemeMode);
+                    MessageBox.Show("Settings saved successfully", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to save settings.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

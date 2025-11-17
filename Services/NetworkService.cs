@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace ChatClient.Services
         private StringBuilder _receiveBuffer;
 
         public event EventHandler<string> MessageReceived;
+        public event EventHandler<string> MessageSent;
         public event EventHandler<string> ConnectionStatusChanged;
         public event EventHandler<Exception> ErrorOccurred;
 
@@ -22,25 +24,39 @@ namespace ChatClient.Services
             _receiveBuffer = new StringBuilder();
         }
 
-        public async Task<bool> ConnectAsync(string host, int port)
+        public async Task<(bool, string)> ConnectAsync(string host, int port)
         {
+            Console.WriteLine($"Attempting to connect to {host}:{port}...");
             try
             {
                 _tcpClient = new TcpClient();
-                await _tcpClient.ConnectAsync(host, port);
-                _networkStream = _tcpClient.GetStream();
+                var connectTask = _tcpClient.ConnectAsync(host, port);
+                var timeoutTask = Task.Delay(5000); // 5-second timeout
 
+                var completedTask = await Task.WhenAny(connectTask, timeoutTask);
+
+                if (completedTask == timeoutTask)
+                {
+                    Console.WriteLine("Connection timed out.");
+                    throw new TimeoutException("Connection timed out.");
+                }
+
+                await connectTask; // Propagate any exceptions from the connection task
+
+                _networkStream = _tcpClient.GetStream();
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                OnConnectionStatusChanged("Connected");
                 _ = ReceiveMessagesAsync(_cancellationTokenSource.Token);
-
-                return true;
+                OnConnectionStatusChanged("Connected");
+                Console.WriteLine("Connection successful.");
+                return (true, null);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Connection failed: {ex.Message}");
                 OnErrorOccurred(ex);
-                return false;
+                OnConnectionStatusChanged("Disconnected");
+                return (false, ex.Message);
             }
         }
 
@@ -60,20 +76,25 @@ namespace ChatClient.Services
             {
                 if (!IsConnected())
                 {
+                    Console.WriteLine("SendMessageAsync failed: Not connected to server.");
                     throw new InvalidOperationException("Not connected to server");
                 }
 
                 string formattedMessage = isCommand ? $"`{message}" : message;
                 string nullTerminatedMessage = formattedMessage + '\0';
 
+                Console.WriteLine($"Sending message: {nullTerminatedMessage}");
                 byte[] data = Encoding.UTF8.GetBytes(nullTerminatedMessage);
                 await _networkStream.WriteAsync(data, 0, data.Length);
                 await _networkStream.FlushAsync();
+
+                OnMessageSent(formattedMessage);
 
                 return true;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"SendMessageAsync failed: {ex.Message}");
                 OnErrorOccurred(ex);
                 return false;
             }
@@ -96,6 +117,7 @@ namespace ChatClient.Services
                     }
 
                     string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    Console.WriteLine($"Received data: {receivedData}");
                     _receiveBuffer.Append(receivedData);
 
                     ProcessReceivedMessages();
@@ -113,22 +135,21 @@ namespace ChatClient.Services
 
         private void ProcessReceivedMessages()
         {
-            string buffer = _receiveBuffer.ToString();
-            int delimiterIndex;
+            string bufferContent = _receiveBuffer.ToString();
+            int nullIndex;
 
-            while ((delimiterIndex = buffer.IndexOf('\0')) >= 0)
+            while ((nullIndex = bufferContent.IndexOf('\0')) != -1)
             {
-                string message = buffer.Substring(0, delimiterIndex);
-                buffer = buffer.Substring(delimiterIndex + 1);
+                string message = bufferContent.Substring(0, nullIndex);
+                bufferContent = bufferContent.Substring(nullIndex + 1);
 
-                if (!string.IsNullOrEmpty(message))
+                if (!string.IsNullOrWhiteSpace(message))
                 {
                     OnMessageReceived(message);
                 }
             }
 
-            _receiveBuffer.Clear();
-            _receiveBuffer.Append(buffer);
+            _receiveBuffer = new StringBuilder(bufferContent);
         }
 
         public void Disconnect()
@@ -149,6 +170,11 @@ namespace ChatClient.Services
         protected virtual void OnMessageReceived(string message)
         {
             MessageReceived?.Invoke(this, message);
+        }
+
+        protected virtual void OnMessageSent(string message)
+        {
+            MessageSent?.Invoke(this, message);
         }
 
         protected virtual void OnConnectionStatusChanged(string status)

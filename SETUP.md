@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Visual Studio 2022** (or later) with .NET 6.0 SDK installed
+- **Visual Studio 2022** (or later) with .NET 8.0 SDK installed
 - **Python Chat Server** running on `localhost:9999` (or specified host/port)
 - Internet connection for Supabase database integration
 
@@ -34,17 +34,19 @@ ChatClient/
 ## Installation Steps
 
 1. **Open the Project**
+
    - Open Visual Studio 2022
    - Open the `ChatClient.csproj` file
 
 2. **Restore NuGet Packages**
+
    - Visual Studio will automatically restore packages on opening
    - If needed, go to `Tools > NuGet Package Manager > Manage NuGet Packages for Solution`
    - Required packages:
-     - `Supabase` (v4.0.0)
-     - `Postgrest` (v3.0.0)
+     - `Supabase` (v1.1.1)
 
 3. **Build the Project**
+
    - Press `Ctrl+Shift+B` or go to `Build > Build Solution`
    - Ensure no compilation errors
 
@@ -65,16 +67,19 @@ await _preferencesService.InitializeAsync(
 ```
 
 To change these credentials:
+
 1. Replace the URL with your Supabase project URL
 2. Replace the API key with your project's anonymous key
 
 ### Python Server Connection
 
 1. **Default Settings**
+
    - Host: `localhost`
    - Port: `9999`
 
 2. **Custom Connection**
+
    - Enter the desired host and port in the connection panel at the top
    - Click "Connect" button
 
@@ -124,11 +129,13 @@ To change these credentials:
 Click the ⚙ icon in the top-right to open Settings:
 
 #### Appearance Tab
+
 - **Theme**: Choose between Light and Dark mode
 - **Accent Color**: Select from Blue, Green, Orange, or Red
 - **Font Size**: Adjust text size (10-18pt)
 
 #### Notifications Tab
+
 - **Sound**: Enable/disable sound notifications
 - **Volume**: Adjust notification volume (0-100%)
 - **Event Types**: Toggle notifications for:
@@ -137,10 +144,12 @@ Click the ⚙ icon in the top-right to open Settings:
   - Error notifications
 
 #### Connection Tab
+
 - **Auto-connect**: Automatically connect to last server on startup
 - **Last Connection**: View and edit saved connection details
 
 #### Advanced Tab
+
 - **Background Image**: Select custom background image for the window
 - **Window Transparency**: Adjust window transparency (20-100%)
 
@@ -149,6 +158,7 @@ Click the ⚙ icon in the top-right to open Settings:
 ### Network Protocol
 
 The client strictly adheres to the Python server's protocol:
+
 - All messages are null-terminated (`\0`)
 - Commands are prefixed with backtick (`` ` ``)
 - Example commands: `` `join ``, `` `start ``, `` `list ``, `` `quit ``, `` `exit ``
@@ -185,20 +195,24 @@ The client strictly adheres to the Python server's protocol:
 ### Connection Issues
 
 **Problem**: Cannot connect to server
+
 - **Solution**: Verify server is running and host/port are correct
 - Check firewall settings allow connections to the port
 
 **Problem**: "Connection lost" message
+
 - **Solution**: Server may have crashed or network was interrupted
 - Click "Reconnect" or close/reopen the application
 
 ### Message Issues
 
 **Problem**: Messages appear in wrong room
+
 - **Solution**: Click the correct room tab before sending
 - Check the message arrives in the active room only
 
 **Problem**: No sound notifications
+
 - **Solution**: Enable sound in Settings > Notifications tab
 - Verify Windows volume is not muted
 - Check speaker/headphone connection
@@ -206,6 +220,7 @@ The client strictly adheres to the Python server's protocol:
 ### Settings Issues
 
 **Problem**: Settings not persisting
+
 - **Solution**: Click "Save" button in Settings window
 - Verify Supabase connection is working
 - Check internet connectivity
@@ -226,6 +241,7 @@ The client strictly adheres to the Python server's protocol:
 ## Support
 
 For issues with:
+
 - **Python Server**: Refer to server documentation
 - **Supabase**: Visit https://supabase.com/docs
 - **C# WPF**: Refer to Microsoft documentation at https://learn.microsoft.com/en-us/dotnet/desktop/wpf/
