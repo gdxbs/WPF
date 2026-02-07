@@ -62,7 +62,7 @@ namespace ChatClient.Services
                 var parts = message.Split(new[] { "@chatroom" }, StringSplitOptions.None);
                 if (parts.Length > 1)
                 {
-                    var roomPart = parts[1].Trim().Split(new[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries);
+                    var roomPart = parts[1].Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     if (roomPart.Length > 0)
                     {
                         return roomPart[0];
