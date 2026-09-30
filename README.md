@@ -2,7 +2,7 @@
 
 A modern, feature-rich WPF desktop application for connecting to your Python multithreaded TCP chat server. Supports multiple simultaneous room connections, customizable themes, sound notifications, and persistent user preferences.
 
-## 🎯 Key Features
+## Key Features
 
 ### Core Chat Functionality
 - ✅ **Multi-Room Support**: Join and chat in multiple rooms simultaneously
@@ -34,7 +34,7 @@ A modern, feature-rich WPF desktop application for connecting to your Python mul
 - ✅ **Cloud Persistence**: Supabase integration for settings storage
 - ✅ **MVVM Ready**: Prepared for further WPF/MVVM enhancements
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 ChatClient/
@@ -65,7 +65,7 @@ ChatClient/
 └── README.md                    # This file
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Windows 10/11
@@ -158,7 +158,7 @@ Client: Hello everyone\0
 Server: alice: Hello everyone\0
 ```
 
-## 🎨 UI Customization
+## UI Customization
 
 ### Built-In Themes
 1. **Light Theme**: White background, dark text, blue accents
@@ -179,7 +179,7 @@ Server: alice: Hello everyone\0
 
 All settings persist automatically to Supabase.
 
-## 📊 Multi-Room Features
+## Multi-Room Features
 
 ### Simultaneous Connections
 - Join multiple rooms at once
@@ -199,7 +199,7 @@ All settings persist automatically to Supabase.
 - Resume chat in first room
 - All state maintained
 
-## 🔊 Notifications
+## Notifications
 
 ### Event Types
 1. **Message Received**: When new chat message arrives
@@ -217,7 +217,7 @@ All settings persist automatically to Supabase.
 - Configurable volume (0-100%)
 - Can add custom WAV files
 
-## 💾 Preferences Persistence
+## Preferences Persistence
 
 ### Local Storage
 - Machine ID stored in Windows Registry
@@ -244,7 +244,7 @@ All settings persist automatically to Supabase.
 - Last connection details
 - Auto-connect preference
 
-## �� Security & Privacy
+## Security & Privacy
 
 ### No User Authentication
 - Open connection policy
@@ -262,7 +262,7 @@ All settings persist automatically to Supabase.
 - Same security level as Python client
 - No encryption implemented
 
-## 🧪 Testing
+## Testing
 
 Comprehensive testing guide available in [TESTING.md](TESTING.md):
 
@@ -276,7 +276,7 @@ Comprehensive testing guide available in [TESTING.md](TESTING.md):
 
 Quick regression checklist included for post-development testing.
 
-## 📚 Documentation
+## Documentation
 
 ### Quick References
 - **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup and basic usage
@@ -284,7 +284,7 @@ Quick regression checklist included for post-development testing.
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical design and internals
 - **[TESTING.md](TESTING.md)** - Complete testing procedures
 
-## 🛠️ Development
+## Development
 
 ### Building from Source
 ```bash
@@ -312,7 +312,7 @@ dotnet publish -c Release -r win-x64 --self-contained
 - Clear naming conventions
 - Comments for complex logic
 
-## 🐛 Known Limitations
+## Known Limitations
 
 1. **No Direct Messages**: All communication is room-based
 2. **Message History**: Cleared on disconnect (by design)
@@ -320,7 +320,7 @@ dotnet publish -c Release -r win-x64 --self-contained
 4. **Single Connection**: Each app instance connects separately
 5. **No File Transfer**: Chat messages only
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Connection Issues
 - Verify Python server is running on specified host/port
@@ -343,7 +343,7 @@ dotnet publish -c Release -r win-x64 --self-contained
 - Check message arrived in active tab
 - Server may route to wrong room on edge cases
 
-## 📝 Performance Metrics
+## Performance Metrics
 
 - **Connection Time**: ~100-500ms (depends on network)
 - **Message Latency**: <50ms (localhost)
@@ -351,11 +351,11 @@ dotnet publish -c Release -r win-x64 --self-contained
 - **Memory Footprint**: ~80-150MB (varies with room count)
 - **CPU Usage**: <5% idle, <15% during active chat
 
-## 📄 License
+## License
 
 This WPF client is provided as a companion to your Python chat server. See server documentation for licensing information.
 
-## 🤝 Contributing
+## Contributing
 
 This is a complete implementation ready for production use. For modifications:
 
@@ -365,7 +365,7 @@ This is a complete implementation ready for production use. For modifications:
 4. Update documentation accordingly
 5. Test thoroughly with Python server
 
-## 📞 Support
+## Support
 
 ### Getting Help
 - Review [QUICKSTART.md](QUICKSTART.md) for common questions
@@ -381,7 +381,7 @@ Provide:
 - Windows version
 - .NET runtime version
 
-## 🎉 Features Showcase
+## Features Showcase
 
 ### Modern UI
 - Flat design with subtle shadows
@@ -407,7 +407,7 @@ Provide:
 - Font adjustments
 - Window styling
 
-## 📈 Future Enhancement Ideas
+## Future Enhancement Ideas
 
 1. Direct messaging between users
 2. Message search and filtering
